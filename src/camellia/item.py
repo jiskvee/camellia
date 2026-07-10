@@ -42,115 +42,129 @@ def beet_default(ctx: Context):
 		return
 
 	for location, file in ctx.data[ItemFile].items():
-		item = file.data
-		ns, path = location.split(":", 1)
-		print(f"Creating item {location}\n{item}")
+		generate_item(ctx, location, file)
 
-		# lore
-		if isinstance(item.description, str):
-			resolved_lore: list[TextComponent] = [{
-				"text": item.description,
+
+def generate_item(ctx: Context, location: str, file: ItemFile):
+	item = file.data
+	ns, path = location.split(":", 1)
+	#print(f"Creating item {location}\n{item}")
+
+	# only create equipment file, up to the user to define how it's used since it's pretty specific
+	if item.equipment_layers is not None:
+		if isinstance(item.equipment_layers, str): # single texture
+			ctx.assets.equipments[location] = Equipment({
+				"layers": {
+					item.equipment_layers: [{"texture": location}]
+				}
+			})
+		else: # inline
+			ctx.assets.equipments[location] = Equipment(item.equipment_layers)
+
+	# parse lore
+	if isinstance(item.description, str):
+		resolved_lore: list[TextComponent] = [{
+			"text": item.description,
+			"color": "gray",
+			"italic": False
+		}]
+	elif isinstance(item.description, list) and all(isinstance(line, str) for line in item.description):
+		resolved_lore: list[TextComponent] = [
+			{
+				"text": line,
 				"color": "gray",
 				"italic": False
-			}]
-		elif isinstance(item.description, list) and all(isinstance(line, str) for line in item.description):
-			resolved_lore: list[TextComponent] = [
-				{
-					"text": line,
-					"color": "gray",
-					"italic": False
-				}
-				for line in item.description
-			]
-		else:
-			resolved_lore: list[TextComponent] = item.description
+			}
+			for line in item.description
+		]
+	else:
+		resolved_lore: list[TextComponent] = item.description
 
-		# equipment sssss
-		if item.equipment_layers is not None:
-			if isinstance(item.equipment_layers, str): # single texture
-				ctx.assets.equipments[location] = Equipment({
-					"layers": {
-						item.equipment_layers: [{"texture": location}]
-					}
-				})
-			else: # inline
-				ctx.assets.equipments[location] = Equipment(item.equipment_layers)
+	# model and definition
+	if isinstance(item.definition, str) and item.definition.startswith("minecraft"):
+		resolved_definition = item.definition
+	else:
+		resolved_model: str = resolve_model(ctx, item, ns, path)
+		resolved_definition: str = resolve_definition(ctx, item, resolved_model, location)
 
+	# final components
+	resolved_components: dict[str, Any] = {
+		"minecraft:item_name": item.name,
+		"minecraft:item_model": resolved_definition,
+		"minecraft:lore": resolved_lore,
+		"minecraft:custom_data": {
+			ns: { "id": item.id },
+			**({"smithed": item.smithed_ignore} if item.smithed_ignore is not None else {})
+		},
+		**item.components
+	}
 
-		# model
-		if isinstance(item.model, str): # location
-			resolved_model = item.model
-		else:
-			resolved_model = f"{ns}:item/{path}"
-			if item.model is not None: # inline
-				ctx.assets.models[resolved_model] = Model(item.model)
-			else: # omitted
-				ctx.assets.models[resolved_model] = Model({
-					"parent": item.parent_model,
-					"textures": {
-						"layer0": resolved_model
-					}
-				})
-
-		# definition
-		if isinstance(item.definition, str): # location
-			resolved_definition = item.definition
-		else:
-			resolved_definition = location
-			if item.definition is not None: # inline
-				ctx.assets.item_models[resolved_definition] = ItemModel(item.definition)
-			else: # omitted
-				ctx.assets.item_models[resolved_definition] = ItemModel({
-					"model": {
-						"type": "model",
-						"model": resolved_model
-					}
-				})
-
-		# final components
-		resolved_components: dict[str, Any] = {
-			"minecraft:item_name": item.name,
-			"minecraft:item_model": resolved_definition,
-			"minecraft:lore": resolved_lore,
-			"minecraft:custom_data": {
-				ns: { "id": item.id },
-				**({"smithed": item.smithed_ignore} if item.smithed_ignore is not None else {})
-			},
-			**item.components
-		}
-
-		# build loot table
-		ctx.data.loot_tables[f"{ns}:items/{path}"] = LootTable({
-			"pools": [{
-				"rolls": 1,
-				"entries": [{
-					"type": "minecraft:item",
-					"name": item.base_item,
-					"functions": [{
-						"function": "minecraft:set_components",
-						"components": resolved_components
-					}]
+	# build loot table
+	ctx.data.loot_tables[f"{ns}:items/{path}"] = LootTable({
+		"pools": [{
+			"rolls": 1,
+			"entries": [{
+				"type": "minecraft:item",
+				"name": item.base_item,
+				"functions": [{
+					"function": "minecraft:set_components",
+					"components": resolved_components
 				}]
 			}]
-		})
+		}]
+	})
 
-		# parse recipe field
-		if item.recipe is None: # omitted
-			return
-		elif isinstance(item.recipe, str): # location
-			resolved_recipe = ctx.data.recipes[item.recipe].data
-		else: # inline
-			resolved_recipe = item.recipe
+	# parse recipe field
+	if item.recipe is None: # omitted
+		return
+	elif isinstance(item.recipe, str): # location
+		resolved_recipe = ctx.data.recipes[item.recipe].data
+	else: # inline
+		resolved_recipe = item.recipe
 
-		# build recipe
-		current_result: dict = resolved_recipe.get("result", {})
-		new_data: dict[str, Any] = {
-			"id": item.base_item,
-			"components": resolved_components
-		}
-		if isinstance(current_result, str):
-			current_result = new_data
-		resolved_recipe["result"] = current_result | new_data
+	# build recipe
+	current_result: dict = resolved_recipe.get("result", {})
+	new_data: dict[str, Any] = {
+		"id": item.base_item,
+		"components": resolved_components
+	}
+	if isinstance(current_result, str):
+		current_result = new_data
+	resolved_recipe["result"] = current_result | new_data
 
-		cat = f"{item.category}/" if item.category is not None else ""
-		ctx.data.recipes[f"{ns}:{cat}{item.id}"] = Recipe(resolved_recipe)
+	cat = f"{item.category}/" if item.category is not None else ""
+	ctx.data.recipes[f"{ns}:{cat}{item.id}"] = Recipe(resolved_recipe)
+
+
+def resolve_model(ctx: Context, item: Item, ns: str, path: str) -> str:
+	if isinstance(item.model, str): # location
+		moodel = item.model
+	else:
+		moodel = f"{ns}:item/{path}"
+		if item.model is not None: # inline
+			ctx.assets.models[moodel] = Model(item.model)
+		elif item.definition is None: # omitted, and no definition provided
+			ctx.assets.models[moodel] = Model({
+				"parent": item.parent_model,
+				"textures": {
+					"layer0": moodel
+				}
+			})
+	return moodel
+
+
+def resolve_definition(ctx: Context, item: Item, resolved_model: str, location: str) -> str:
+	if isinstance(item.definition, str): # location
+		definitive = item.definition
+	else:
+		definitive = location
+		if item.definition is not None: # inline
+			ctx.assets.item_models[definitive] = ItemModel(item.definition)
+		else: # omitted
+			ctx.assets.item_models[definitive] = ItemModel({
+				"model": {
+					"type": "model",
+					"model": resolved_model
+				}
+			})
+	return definitive
