@@ -10,6 +10,7 @@ def mcmeta(ctx: Context):
 	ctx.data.mcmeta = Mcmeta({
 		"id": ctx.project_id,
 		"pack": {
+			"description": ctx.project_description,
 			"pack_format": dp[0],
 			"min_format": dp,
 			"max_format": dp,
@@ -18,6 +19,7 @@ def mcmeta(ctx: Context):
 	ctx.assets.mcmeta = Mcmeta({
 		"id": ctx.project_id,
 		"pack": {
+			"description": ctx.project_description,
 			"pack_format": rp[0],
 			"min_format": rp[0],
 			"max_format": rp[0],
