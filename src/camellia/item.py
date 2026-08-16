@@ -1,6 +1,17 @@
-from beet import Context, Recipe, LootTable, Model, ItemModel, Equipment, FileDeserialize, JsonFileBase, NamespaceFileScope
-from beet.core.utils import TextComponent
 from typing import Any, ClassVar
+
+from beet import (
+	Context,
+	Equipment,
+	FileDeserialize,
+	ItemModel,
+	JsonFileBase,
+	LootTable,
+	Model,
+	NamespaceFileScope,
+	Recipe,
+)
+from beet.core.utils import TextComponent
 from pydantic import BaseModel
 
 

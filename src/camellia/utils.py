@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from beet import Context, ItemModel, Model
 
 

@@ -3,9 +3,6 @@ name = "camellia"
 version = "0.1.0"
 description = "A useful set of plugins for the beet toolchain!"
 readme = "README.md"
-authors = [
-    { name = "ces", email = "57163912+CesarGpe@users.noreply.github.com" }
-]
 requires-python = ">=3.14"
 dependencies = [
     "beet>=0.115.0",

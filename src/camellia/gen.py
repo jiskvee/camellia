@@ -1,6 +1,16 @@
 import re
 from collections import defaultdict
-from beet import Context, Enchantment, Function, FunctionTag, LootTable, Mcmeta, Recipe, SoundConfig
+
+from beet import (
+	Context,
+	Enchantment,
+	Function,
+	FunctionTag,
+	LootTable,
+	Mcmeta,
+	Recipe,
+	SoundConfig,
+)
 
 
 def mcmeta(ctx: Context):
@@ -47,14 +57,14 @@ def recipe_outputs(ctx: Context):
 				recipe_data.setdefault("result", {})["components"] = components
 				ctx.data.recipes[key] = Recipe(recipe_data)
 			except (KeyError, IndexError):
-				print(f"⚠ Failed to extract components from loot table: {loot_path}")
+				print(f"!> Failed to extract components from loot table: {loot_path}")
 
 
 def uninstall_function(ctx: Context):
 	"""Generates an uninstall command that removes scoreboards, teams, and schedules"""
 	ns = ctx.project_id
 	removes = []
-	for _, func in ctx.data[ns].functions.items():
+	for func in ctx.data[ns].functions.values():
 		for line in func.lines:
 			if line.startswith("scoreboard objectives add"):
 				parts = line.split()
@@ -131,7 +141,7 @@ def enchant_predicate_references(ctx: Context):
 					ref_data = ref_file.data
 					return resolve_references(ref_data)
 				except KeyError:
-					print(f"⚠️ Reference not found: {ref_name}")
+					print(f"!> Reference not found: {ref_name}")
 					return obj
 			else:
 				return {k: resolve_references(v) for k, v in obj.items()}

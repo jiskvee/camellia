@@ -1,24 +1,26 @@
+from copy import deepcopy
+from typing import Any, ClassVar
+
 from beet import Context, FileDeserialize, JsonFileBase, LootTable, NamespaceFileScope
 from beet.core.utils import TextComponent
-from typing import Any, Optional, ClassVar
 from pydantic import BaseModel, ConfigDict
-from copy import deepcopy
+
 
 class Display(BaseModel):
 	model_config = ConfigDict(populate_by_name=True)
 	
-	pack_mark: Optional[TextComponent] = None
-	trinket_icon: Optional[TextComponent] = None
+	pack_mark: TextComponent | None = None
+	trinket_icon: TextComponent | None = None
 
 class Trinket(BaseModel):
 	model_config = ConfigDict(populate_by_name=True)
 	
 	id: str
 	rarity: str = "common"
-	weight_percent: Optional[int] = None
-	max_stack_size: Optional[int] = None
+	weight_percent: int | None = None
+	max_stack_size: int | None = None
 	
-	tooltip_style: Optional[str] = None
+	tooltip_style: str | None = None
 	item_model: str = "thallium:thallium_ingot"
 	description: list[TextComponent] = []
 	display: Display = Display()
