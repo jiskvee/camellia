@@ -1,5 +1,6 @@
 from beet import Context
 
+"""Package data and resource packs for release"""
 
 def beet_default(ctx: Context):
 	version = f"v{ctx.project_version}"

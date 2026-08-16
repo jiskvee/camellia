@@ -5,12 +5,13 @@ from beet import (
 	Context,
 	Enchantment,
 	Function,
-	FunctionTag,
 	LootTable,
 	Mcmeta,
 	Recipe,
 	SoundConfig,
 )
+
+from camellia.utils import merge_func_tag
 
 
 def mcmeta(ctx: Context):
@@ -214,13 +215,7 @@ def updater(ctx: Context):
 		draft.data.loot_tables[loot_path] = LootTable({"pools": [{"entries": updater_entries, "rolls": 1.0}]})
 		draft.data.functions[func_path] = Function([f"loot replace entity @s contents loot {loot_path}"])
 		
-		# Append to the function tag if it exists, or create it otherwise
-		tag_name = "thallium:updater/main"
-		tag_value = FunctionTag( {"values":[func_path]} )
-		if tag_name in draft.data.function_tags:
-			draft.data.function_tags[tag_name].append(tag_value)
-		else:
-			draft.data.function_tags[tag_name] = tag_value
+		merge_func_tag(ctx, "thallium:updater/main", func_path)
 
 		print("> Updater loot table built")
 

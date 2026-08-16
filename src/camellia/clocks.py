@@ -1,4 +1,6 @@
-from beet import Context, Function, FunctionTag
+from beet import Context, Function
+
+from camellia.utils import merge_func_tag
 
 tick = "camellia:technical/tick"
 second_clock = "camellia:technical/second_clock"
@@ -19,18 +21,12 @@ def beet_default(ctx: Context):
 	
 	if clock_config.get("tick", False):
 		ctx.data.functions[tick] = Function()
-		add_clock(ctx, "tick", tick)
+		merge_func_tag(ctx, "minecraft:tick", tick)
 	
 	if clock_config.get("second_clock", False):
 		ctx.data.functions[second_clock] = Function(f"schedule function {second_clock} 1s replace")
-		add_clock(ctx, "load", second_clock)
+		merge_func_tag(ctx, "minecraft:load", second_clock)
 
 	if clock_config.get("ten_second_clock", False):
 		ctx.data.functions[ten_second_clock] = Function(f"schedule function {ten_second_clock} 10s replace")
-		add_clock(ctx, "load", ten_second_clock)
-
-
-def add_clock(ctx: Context, tag: str, value: str):
-	ctx.data.function_tags.merge({
-		f"minecraft:{tag}": FunctionTag({"values": [value]})
-	})
+		merge_func_tag(ctx, "minecraft:load", ten_second_clock)
