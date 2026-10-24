@@ -5,7 +5,7 @@ description = "A useful set of plugins for the beet toolchain!"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "beet>=0.115.0",
+    "beet>0.119.1",
 ]
 
 [build-system]

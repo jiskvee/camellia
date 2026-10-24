@@ -15,8 +15,8 @@ from camellia.utils import merge_func_tag
 
 
 def mcmeta(ctx: Context):
-	dp = [107, 1]
-	rp = [88, 0]
+	dp = [121, 0]
+	rp = [97, 1]
 
 	ctx.data.mcmeta = Mcmeta({
 		"id": ctx.project_id,
@@ -51,7 +51,7 @@ def recipe_outputs(ctx: Context):
 			
 			try:
 				entry = loot_data["pools"][0]["entries"][0]
-				components = entry["functions"][0]["components"]
+				components = entry["modifier"]["components"]
 				item_id = entry["name"]
 
 				recipe_data.setdefault("result", {})["id"] = item_id

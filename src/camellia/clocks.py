@@ -13,8 +13,8 @@ def beet_default(ctx: Context):
 
 	# create function names
 	tick = f"{dir}/tick"
-	second_clock = f"{dir}/second_clock"
-	ten_second_clock = f"{dir}/ten_second_clock"
+	second_clock = f"{dir}/20t"
+	ten_second_clock = f"{dir}/200t"
 
 	# append each function to the corresponding tag if it is within the config
 	clock_config: dict = ctx.meta.get("camellia", {}).get("clocks", {})
@@ -24,9 +24,9 @@ def beet_default(ctx: Context):
 		merge_func_tag(ctx, "minecraft:tick", tick)
 	
 	if clock_config.get("second_clock", False):
-		ctx.data.functions[second_clock] = Function(f"schedule function {second_clock} 1s replace")
+		ctx.data.functions[second_clock] = Function(f"schedule function {second_clock} 20t replace")
 		merge_func_tag(ctx, "minecraft:load", second_clock)
 
 	if clock_config.get("ten_second_clock", False):
-		ctx.data.functions[ten_second_clock] = Function(f"schedule function {ten_second_clock} 10s replace")
+		ctx.data.functions[ten_second_clock] = Function(f"schedule function {ten_second_clock} 200t replace")
 		merge_func_tag(ctx, "minecraft:load", ten_second_clock)

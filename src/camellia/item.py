@@ -117,10 +117,10 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 			"entries": [{
 				"type": "minecraft:item",
 				"name": item.base_item,
-				"functions": [{
-					"function": "minecraft:set_components",
+				"modifier": {
+					"type": "minecraft:set_components",
 					"components": resolved_components
-				}]
+				}
 			}]
 		}]
 	})
