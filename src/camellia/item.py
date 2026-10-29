@@ -23,6 +23,7 @@ class Item(BaseModel):
 
 	base_item: str = "minecraft:poisonous_potato"
 	components: JsonDict = {}
+	custom_data: JsonDict = {}
 	extra_modifier: JsonDict | list[JsonDict|str] | str | None = None
 
 	category: str | None = None
@@ -100,13 +101,14 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 		resolved_definition: str = resolve_definition(ctx, item, resolved_model, location)
 
 	# final components
-	resolved_components: dict[str, Any] = {
+	resolved_components: JsonDict = {
 		"minecraft:item_name": item.name,
 		"minecraft:item_model": resolved_definition,
 		"minecraft:lore": resolved_lore,
 		"minecraft:custom_data": {
 			ns: { "id": item.id },
-			"smithed": { "ignore": { "functionality": True, "crafting": True } }
+			"smithed": { "ignore": { "functionality": True, "crafting": True } },
+			**item.custom_data
 		},
 		**item.components
 	}
@@ -143,8 +145,8 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 		resolved_recipe = item.recipe
 
 	# build recipe
-	current_result: dict = resolved_recipe.get("result", {})
-	new_data: dict[str, Any] = {
+	current_result: JsonDict = resolved_recipe.get("result", {})
+	new_data: JsonDict = {
 		"id": item.base_item,
 		"components": resolved_components
 	}
