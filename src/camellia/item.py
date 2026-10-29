@@ -1,6 +1,7 @@
 from typing import Any, ClassVar
 
 from beet import (
+	Advancement,
 	Context,
 	Equipment,
 	FileDeserialize,
@@ -26,13 +27,13 @@ class Item(BaseModel):
 	smithed_ignore: dict[str, bool] | None = None
 
 	category: str | None = None
-	recipe: dict | str | None = None
-	recipe_adv: dict | str | None = None
+	recipe: JsonDict | str | None = None
+	recipe_advancement: JsonDict | str | None = None
 
-	model: dict | str | None = None
-	definition: dict | str | None = None
+	model: JsonDict | str | None = None
+	definition: JsonDict | str | None = None
 	parent_model: str = "item/generated"
-	equipment_layers: dict | str | None = None
+	equipment_layers: JsonDict | str | None = None
 
 
 class ItemFile(JsonFileBase[Item]):
@@ -153,7 +154,15 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 	resolved_recipe["result"] = current_result | new_data
 
 	cat = f"{item.category}/" if item.category is not None else ""
-	ctx.data.recipes[f"{ns}:{cat}{item.id}"] = Recipe(resolved_recipe)
+	recipe_path = f"{ns}:{cat}{item.id}"
+	ctx.data.recipes[recipe_path] = Recipe(resolved_recipe)
+
+	# parse recipe advancement
+	if item.recipe_advancement is None or isinstance(item.recipe_advancement, str): # omitted or location
+		return
+	else: # inline
+		item.recipe_advancement["rewards"] = { "recipes": [recipe_path] }
+		ctx.data.advancements[f"{ns}:recipes/{cat}{item.id}"] = Advancement(item.recipe_advancement)
 
 
 def resolve_model(ctx: Context, item: Item, ns: str, path: str) -> str:
