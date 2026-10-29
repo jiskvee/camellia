@@ -18,13 +18,14 @@ from pydantic import BaseModel
 
 class Item(BaseModel):
 	id: str
+	base_item: str = "minecraft:poisonous_potato"
+
 	name: TextComponent
 	description: str | list[TextComponent] = []
-
-	base_item: str = "minecraft:poisonous_potato"
-	components: JsonDict = {}
+	tooltip_style: str | None = None
 	custom_data: JsonDict = {}
-	extra_modifier: JsonDict | list[JsonDict|str] | str | None = None
+	components: JsonDict = {}
+	extra_modifier: JsonDict | str | list[JsonDict|str] | None = None
 
 	category: str | None = None
 	recipe: JsonDict | str | None = None
@@ -104,6 +105,7 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 	resolved_components: JsonDict = {
 		"minecraft:item_name": item.name,
 		"minecraft:item_model": resolved_definition,
+		**({"minecraft:tooltip_style": item.tooltip_style} if item.tooltip_style is not None else {}),
 		"minecraft:lore": resolved_lore,
 		"minecraft:custom_data": {
 			ns: { "id": item.id },
