@@ -101,17 +101,19 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 		resolved_model: str = resolve_model(ctx, item, ns, path)
 		resolved_definition: str = resolve_definition(ctx, item, resolved_model, location)
 
+	# base custom data
+	base_data: JsonDict = {
+		ns: { "id": item.id },
+		"smithed": { "ignore": { "functionality": True, "crafting": True } }
+	}
+
 	# final components
 	resolved_components: JsonDict = {
 		"minecraft:item_name": item.name,
 		"minecraft:item_model": resolved_definition,
 		**({"minecraft:tooltip_style": item.tooltip_style} if item.tooltip_style is not None else {}),
 		"minecraft:lore": resolved_lore,
-		"minecraft:custom_data": {
-			ns: { "id": item.id },
-			"smithed": { "ignore": { "functionality": True, "crafting": True } },
-			**item.custom_data
-		},
+		"minecraft:custom_data": recursive_merge(base_data, item.custom_data),
 		**item.components
 	}
 
@@ -200,3 +202,14 @@ def resolve_definition(ctx: Context, item: Item, resolved_model: str, location: 
 				}
 			})
 	return definitive
+
+
+def recursive_merge(dict1, dict2):
+    for key, value in dict2.items():
+        if key in dict1 and isinstance(dict1[key], dict) and isinstance(value, dict):
+            # Recursively merge nested dictionaries
+            dict1[key] = recursive_merge(dict1[key], value)
+        else:
+            # Merge non-dictionary values
+            dict1[key] = value
+    return dict1
