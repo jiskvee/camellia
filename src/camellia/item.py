@@ -11,7 +11,7 @@ from beet import (
 	NamespaceFileScope,
 	Recipe,
 )
-from beet.core.utils import TextComponent
+from beet.core.utils import JsonDict, TextComponent
 from pydantic import BaseModel
 
 
@@ -20,8 +20,9 @@ class Item(BaseModel):
 	name: TextComponent
 	description: str | list[TextComponent] = []
 
-	base_item: str
-	components: dict[str, Any] = {}
+	base_item: str = "minecraft:poisonous_potato"
+	components: JsonDict = {}
+	extra_modifier: JsonDict | list[JsonDict|str] | str | None = None
 	smithed_ignore: dict[str, bool] | None = None
 
 	category: str | None = None
@@ -110,6 +111,17 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 		**item.components
 	}
 
+	# modifier list
+	modifiers: list[Any] = [{
+		"type": "minecraft:set_components",
+		"components": resolved_components
+	}]
+	if item.extra_modifier:
+		if isinstance(item.extra_modifier, list):
+			modifiers.extend(item.extra_modifier)
+		else:
+			modifiers.append(item.extra_modifier)
+
 	# build loot table
 	ctx.data.loot_tables[f"{ns}:items/{path}"] = LootTable({
 		"pools": [{
@@ -117,10 +129,7 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 			"entries": [{
 				"type": "minecraft:item",
 				"name": item.base_item,
-				"modifier": {
-					"type": "minecraft:set_components",
-					"components": resolved_components
-				}
+				"modifier": modifiers
 			}]
 		}]
 	})

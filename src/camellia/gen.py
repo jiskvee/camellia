@@ -39,7 +39,7 @@ def mcmeta(ctx: Context):
 
 
 def recipe_outputs(ctx: Context):
-	"""Adds components to recipes from loot table entries of the same name"""
+	"""Adds components to recipes from loot table registries of the same name"""
 	ns = ctx.project_id
 
 	for key, recipe in ctx.data.recipes.items():
@@ -51,8 +51,11 @@ def recipe_outputs(ctx: Context):
 			
 			try:
 				entry = loot_data["pools"][0]["entries"][0]
-				components = entry["modifier"]["components"]
 				item_id = entry["name"]
+				try:
+					components = entry["modifier"]["components"]
+				except (KeyError, TypeError, IndexError):
+					components = entry["modifier"][0]["components"]
 
 				recipe_data.setdefault("result", {})["id"] = item_id
 				recipe_data.setdefault("result", {})["components"] = components
