@@ -24,7 +24,6 @@ class Item(BaseModel):
 	base_item: str = "minecraft:poisonous_potato"
 	components: JsonDict = {}
 	extra_modifier: JsonDict | list[JsonDict|str] | str | None = None
-	smithed_ignore: dict[str, bool] | None = None
 
 	category: str | None = None
 	recipe: JsonDict | str | None = None
@@ -107,7 +106,7 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 		"minecraft:lore": resolved_lore,
 		"minecraft:custom_data": {
 			ns: { "id": item.id },
-			**({"smithed": item.smithed_ignore} if item.smithed_ignore is not None else {})
+			"smithed": { "ignore": { "functionality": True, "crafting": True } }
 		},
 		**item.components
 	}
