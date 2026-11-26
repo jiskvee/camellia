@@ -1,4 +1,4 @@
-from typing import Any, ClassVar
+from typing import ClassVar
 
 from beet import (
 	Advancement,
@@ -14,6 +14,8 @@ from beet import (
 )
 from beet.core.utils import JsonDict, TextComponent
 from pydantic import BaseModel
+
+from .unjank import CreativeTab, ItemSource
 
 
 class Item(BaseModel):
@@ -55,11 +57,21 @@ def beet_default(ctx: Context):
 		print("Warning: No items found.")
 		return
 
+	autoadd = False
+	tab: JsonDict|None = None
+	creative_tabs = ctx.data[CreativeTab]
+	if creative_tabs:
+		config: dict = ctx.meta.get("camellia", {}).get("creative_tab", {})
+		tab_id: str = config.get("id", "")
+		autoadd: bool = config.get("auto_add", False)
+		if tab_id != "" and (entry := creative_tabs.get(tab_id)) is not None:
+			tab = entry.data
+
 	for location, file in ctx.data[ItemFile].items():
-		generate_item(ctx, location, file)
+		generate_item(ctx, location, file, tab, autoadd)
 
 
-def generate_item(ctx: Context, location: str, file: ItemFile):
+def generate_item(ctx: Context, location: str, file: ItemFile, creative_tab: JsonDict|None, autoadd:bool):
 	item = file.data
 	ns, path = location.split(":", 1)
 	#print(f"Creating item {location}\n{item}")
@@ -118,7 +130,7 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 	}
 
 	# modifier list
-	modifiers: list[Any] = [{
+	modifiers: list = [{
 		"type": "minecraft:set_components",
 		"components": resolved_components
 	}]
@@ -129,7 +141,9 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 			modifiers.append(item.extra_modifier)
 
 	# build loot table
-	ctx.data.loot_tables[f"{ns}:items/{path}"] = LootTable({
+	loot_path = f"{ns}:items/{path}"
+	source_path = f"{ns}:{path}"
+	ctx.data.loot_tables[loot_path] = LootTable({
 		"pools": [{
 			"rolls": 1,
 			"entries": [{
@@ -139,6 +153,12 @@ def generate_item(ctx: Context, location: str, file: ItemFile):
 			}]
 		}]
 	})
+	if creative_tab:
+		ctx.data[ItemSource][source_path] = ItemSource({
+			"type": "unjank:loot",
+			"loot": loot_path
+		})
+		if autoadd: creative_tab["items"].append(source_path)
 
 	# parse recipe field
 	if item.recipe is None: # omitted
