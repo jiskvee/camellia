@@ -1,8 +1,8 @@
 from beet import Context
 
-"""Package data and resource packs for release"""
 
 def beet_default(ctx: Context):
+	"""Package data and resource packs for release"""
 	version = f"v{ctx.project_version}"
 	name: str = getattr(ctx, 'project_name', None) or ctx.project_id
 
