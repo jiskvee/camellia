@@ -13,7 +13,7 @@ wheels = [
 
 [[package]]
 name = "beet"
-version = "0.120.0b3"
+version = "0.122.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -28,9 +28,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "toml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4c/53/1445454be2a5875e6ef612eb62e7825f91be94945e4897f721fa8a23d685/beet-0.120.0b3.tar.gz", hash = "sha256:eb49e910ff2387dbd11ef7a45a11ef0f3fbf00170dc17073d859018f57437d3d", size = 111138, upload-time = "2026-10-14T10:00:27.392Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/11/45/8a5d598088fd7186a24004af0870cae0731ec7fa4ffc3dca0ebdaee6dd4d/beet-0.122.0.tar.gz", hash = "sha256:a006e69504b44c0b21488fa315796e9ba5b8149ee07edafca29de4e7db9b775e", size = 112877, upload-time = "2026-11-19T22:47:42.441Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/35/48/a8cec04b9468e467f30cd30b83a4b5d0e8fc5565453c1cb50532c10d1c39/beet-0.120.0b3-py3-none-any.whl", hash = "sha256:eecce588fc45d5764e88b0462046ed63ee14b647f06ff7a1e85f47ad1549cd17", size = 136634, upload-time = "2026-10-14T10:00:25.862Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/59/9dd2c41aa88cc6647145a1bfcc44f23fe6742b58bc1d0ae2dd322db36fee/beet-0.122.0-py3-none-any.whl", hash = "sha256:7823f2654a58ee80e64bec5becf7f80e941e812d8706cfc3783f59401bf75ede", size = 137919, upload-time = "2026-11-19T22:47:41.183Z" },
 ]
 
 [[package]]
@@ -42,7 +42,7 @@ dependencies = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "beet", specifier = ">0.119.1" }]
+requires-dist = [{ name = "beet", specifier = ">=0.121.2" }]
 
 [[package]]
 name = "click"
