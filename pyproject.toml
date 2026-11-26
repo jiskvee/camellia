@@ -1,7 +1,7 @@
 [project]
 name = "camellia"
 version = "0.1.0"
-description = "A useful set of plugins for the beet toolchain!"
+description = "A useful set of plugins and functions making datapacks with beet!"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

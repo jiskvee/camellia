@@ -1,1 +1,2 @@
-A useful set of plugins for the beet toolchain!
+A useful set of plugins and functions making datapacks with beet!
+The documentation is the packs we've made along the way :steamhappy:
