@@ -32,9 +32,7 @@ class TrinketFile(JsonFileBase[Trinket]):
 	data: ClassVar[FileDeserialize[Trinket]] = FileDeserialize()
 
 def clean_lore_component(component: Any) -> Any:
-	"""
-	Recursively removes 'pouch_color' from the component structure.
-	"""
+	"""Recursively removes 'pouch_color' from the component structure."""
 	if isinstance(component, dict):
 		if "pouch_color" in component:
 			del component["pouch_color"]
@@ -70,11 +68,9 @@ def process_pouch_component(component: Any) -> Any:
 	return component
 
 def create_loot_table(namespace: str, trinket: Trinket) -> dict[str, Any]:
-	"""
-	Generates the loot table dictionary based on the Trinket definition.
-	"""
+	"""Generates the loot table dictionary based on the Trinket definition."""
 	
-	# --- 1. Calculate Weight and Stack Size ---
+	# calculate weight and stack size
 	final_weight = 10
 	final_stack_size = 10
 
@@ -103,23 +99,23 @@ def create_loot_table(namespace: str, trinket: Trinket) -> dict[str, Any]:
 		final_weight = 10
 		final_stack_size = 10
 
-	# --- 2. Process Descriptions ---
+	# process descriptions
 	lore_description = []
 	pouch_description = []
 
 	for line in trinket.description:
-		# Prepare Lore Line (Standard display)
-		# Deepcopy to ensure we don't mutate the original pydantic model in place during iteration
+		# prepare lore line (standard display)
+		# deepcopy to ensure we don't mutate the original pydantic model in place during iteration
 		lore_line = deepcopy(line)
 		lore_line = clean_lore_component(lore_line)
 		lore_description.append(lore_line)
 
-		# Prepare Pouch Line (Green/Custom display)
+		# prepare pouch line
 		pouch_line = deepcopy(line)
 		pouch_line = process_pouch_component(pouch_line)
 		pouch_description.append(pouch_line)
 
-	# --- 3. Build Lore List ---
+	# build lore list
 	lore_list = []
 	
 	if trinket.display.pack_mark:
@@ -155,7 +151,7 @@ def create_loot_table(namespace: str, trinket: Trinket) -> dict[str, Any]:
 	
 	lore_list.extend(lore_description)
 
-	# --- 4. Build Components Dictionary ---
+	# build components dictionary
 	components = {
 		"!minecraft:consumable": {},
 		"minecraft:rarity": trinket.rarity,
@@ -170,7 +166,7 @@ def create_loot_table(namespace: str, trinket: Trinket) -> dict[str, Any]:
 	if trinket.tooltip_style:
 		components["minecraft:tooltip_style"] = trinket.tooltip_style
 
-	# --- 5. Build Tooltip Header ---
+	# build tooltip header
 	tooltip_header = []
 	if trinket.display.trinket_icon:
 		tooltip_header.append(trinket.display.trinket_icon)
@@ -190,7 +186,7 @@ def create_loot_table(namespace: str, trinket: Trinket) -> dict[str, Any]:
 		}
 	])
 
-	# --- 6. Add Custom Data ---
+	# add custom data
 	components["minecraft:custom_data"] = {
 		namespace: {
 			"id": trinket.id
@@ -211,7 +207,7 @@ def create_loot_table(namespace: str, trinket: Trinket) -> dict[str, Any]:
 		}
 	}
 
-	# --- 7. Construct Final Loot Table ---
+	# construct final loot table
 	return {
 		"pools": [
 			{
