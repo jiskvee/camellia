@@ -38,56 +38,6 @@ def mcmeta(ctx: Context):
 	})
 
 
-def recipe_outputs(ctx: Context):
-	"""Adds components to recipes from loot table registries of the same name"""
-	ns = ctx.project_id
-
-	for key, recipe in ctx.data.recipes.items():
-		recipe_data = recipe.data
-		loot_path = f"{ns}:items/{key.split(":")[1]}"
-
-		if loot_path in ctx.data.loot_tables:
-			loot_data = ctx.data.loot_tables[loot_path].data
-			
-			try:
-				entry = loot_data["pools"][0]["entries"][0]
-				item_id = entry["name"]
-				try:
-					components = entry["modifier"]["components"]
-				except (KeyError, TypeError, IndexError):
-					components = entry["modifier"][0]["components"]
-
-				recipe_data.setdefault("result", {})["id"] = item_id
-				recipe_data.setdefault("result", {})["components"] = components
-				ctx.data.recipes[key] = Recipe(recipe_data)
-			except (KeyError, IndexError):
-				print(f"!> Failed to extract components from loot table: {loot_path}")
-
-
-def uninstall_function(ctx: Context):
-	"""Generates an uninstall command that removes scoreboards, teams, and schedules"""
-	ns = ctx.project_id
-	removes = []
-	for func in ctx.data[ns].functions.values():
-		for line in func.lines:
-			if line.startswith("scoreboard objectives add"):
-				parts = line.split()
-				if len(parts) >= 3:
-					removes.append(f"scoreboard objectives remove {parts[3]}")
-			if line.startswith("team add"):
-				parts = line.split()
-				if len(parts) >= 3:
-					removes.append(f"team remove {parts[2]}")
-			if line.startswith("schedule function"):
-				parts = line.split()
-				if len(parts) >= 3:
-					removes.append(f"schedule clear {parts[2]}")
-
-	if len(removes) > 0:
-		#removes.insert(0, "# Generated uninstall function")
-		ctx.data.functions[f"{ns}:commands/uninstall"] = Function(removes)
-
-
 def sounds_json(ctx: Context):
 	"""Generates sounds.json by going through the sounds directory"""
 	ns = ctx.project_id
@@ -160,8 +110,72 @@ def enchant_predicate_references(ctx: Context):
 		ctx.data.enchantments[name] = Enchantment(resolved)
 
 
+def copy_spanish(ctx: Context):
+	"""Copies `es_mx` language to the other types of spanish
+	A good neutral spanish translation can be used for all!"""
+	ns = ctx.project_id
+	langs = ["es_ar", "es_cl", "es_ec", "es_es", "es_uy", "es_ve"]
+	for lang in langs:
+		ctx.assets.languages[f"{ns}:{lang}"] = ctx.assets.languages[f"{ns}:es_mx"]
+		mx = ctx.assets.languages.get("minecraft:es_mx")
+		if mx:
+			ctx.assets.languages[f"minecraft:{lang}"] = mx
+
+
+def uninstall_function(ctx: Context):
+	"""Generates an uninstall command that removes scoreboards, teams, and schedules"""
+	ns = ctx.project_id
+	removes = []
+	for func in ctx.data[ns].functions.values():
+		for line in func.lines:
+			if line.startswith("scoreboard objectives add"):
+				parts = line.split()
+				if len(parts) >= 3:
+					removes.append(f"scoreboard objectives remove {parts[3]}")
+			if line.startswith("team add"):
+				parts = line.split()
+				if len(parts) >= 3:
+					removes.append(f"team remove {parts[2]}")
+			if line.startswith("schedule function"):
+				parts = line.split()
+				if len(parts) >= 3:
+					removes.append(f"schedule clear {parts[2]}")
+
+	if len(removes) > 0:
+		#removes.insert(0, "# Generated uninstall function")
+		ctx.data.functions[f"{ns}:commands/uninstall"] = Function(removes)
+
+
+def recipe_outputs(ctx: Context):
+	"""USE CUSTOM ITEM SYSTEM WHEN POSSIBLE
+	Adds components to recipes from loot table registries of the same name"""
+	ns = ctx.project_id
+
+	for key, recipe in ctx.data.recipes.items():
+		recipe_data = recipe.data
+		loot_path = f"{ns}:items/{key.split(":")[1]}"
+
+		if loot_path in ctx.data.loot_tables:
+			loot_data = ctx.data.loot_tables[loot_path].data
+			
+			try:
+				entry = loot_data["pools"][0]["entries"][0]
+				item_id = entry["name"]
+				try:
+					components = entry["modifier"]["components"]
+				except (KeyError, TypeError, IndexError):
+					components = entry["modifier"][0]["components"]
+
+				recipe_data.setdefault("result", {})["id"] = item_id
+				recipe_data.setdefault("result", {})["components"] = components
+				ctx.data.recipes[key] = Recipe(recipe_data)
+			except (KeyError, IndexError):
+				print(f"!> Failed to extract components from loot table: {loot_path}")
+
+
 def updater(ctx: Context):
-	"""Generates a Thallium updater loot table from the pack's `items/` loot tables"""
+	"""DEPRECATED: Thallium is DEAD!
+	Generates a Thallium updater loot table from the pack's `items/` loot tables"""
 	ns = ctx.project_id
 	with ctx.generate.draft() as draft:
 		draft.cache("updater", str(ctx.data[ns].loot_tables))
@@ -221,13 +235,3 @@ def updater(ctx: Context):
 		merge_func_tag(ctx, "thallium:updater/main", func_path)
 
 		print("> Updater loot table built")
-
-
-def copy_spanish(ctx: Context):
-	ns = ctx.project_id
-	langs = ["es_ar", "es_cl", "es_ec", "es_es", "es_uy", "es_ve"]
-	for lang in langs:
-		ctx.assets.languages[f"{ns}:{lang}"] = ctx.assets.languages[f"{ns}:es_mx"]
-		mx = ctx.assets.languages.get("minecraft:es_mx")
-		if mx:
-			ctx.assets.languages[f"minecraft:{lang}"] = mx
