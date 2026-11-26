@@ -4,7 +4,7 @@ from beet import Context, FunctionTag, ItemModel, Model
 
 
 class Location:
-	"""Represents a resource location, allowing to define stuff like `function this.use`"""
+	"""Represents a resource location, letting you define stuff like `function this.use`"""
 
 	__slots__ = ('path',)
 
